@@ -1,0 +1,114 @@
+version: '3.8'
+
+services:
+  spark-app:
+    build: 
+      context: .
+      dockerfile: infra/Dockerfile.spark
+    image: real-time-stock-analytics-spark-app
+
+  docker-proxy:
+    image: tecnativa/docker-socket-proxy
+    privileged: true
+    environment:
+      - CONTAINERS=1
+      - IMAGES=1
+      - NETWORKS=1
+      - POST=1
+      - BUILD=1
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: always
+
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - postgres-db-volume:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "airflow"]
+      interval: 10s
+      retries: 5
+    restart: always
+
+  # --- AIRFLOW SERVICES ---
+  airflow-webserver:
+    image: apache/airflow:2.8.0-python3.11
+    command: webserver
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env  # This loads the HOST_PROJECT_PATH from your .env file
+    environment:
+      # Common Settings
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+      AIRFLOW__CORE__FERNET_KEY: ''
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+      AIRFLOW_UID: 50000
+      # Your Custom Host Path
+      HOST_PROJECT_PATH: C:/Users/Anuj/Desktop/tutorials/real-time-stock-analytics
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./data:/opt/airflow/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+      airflow-init:
+        condition: service_completed_successfully
+    restart: always
+
+  airflow-scheduler:
+    image: apache/airflow:2.8.0-python3.11
+    command: scheduler
+    env_file:
+      - .env
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+      AIRFLOW__CORE__FERNET_KEY: ''
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+      AIRFLOW_UID: 50000
+      HOST_PROJECT_PATH: C:/Users/Anuj/Desktop/tutorials/real-time-stock-analytics
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./data:/opt/airflow/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+      airflow-init:
+        condition: service_completed_successfully
+    restart: always
+
+  airflow-init:
+    image: apache/airflow:2.8.0-python3.11
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        mkdir -p /opt/airflow/logs /opt/airflow/dags /opt/airflow/data
+        airflow db init
+        airflow users create --username airflow --firstname Admin --lastname User --role Admin --email admin@example.com --password airflow
+    environment:
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+      AIRFLOW_UID: 50000
+  
+  stock-dashboard:
+    build:
+      context: .
+      dockerfile: infra/Dockerfile.streamlit
+    image: stock-analytics-dashboard
+    container_name: stock-analytics-dashboard
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./data:/app/data  # This is the "Gold" layer connection
+    restart: always
+
+volumes:
+  postgres-db-volume:
