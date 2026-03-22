@@ -44,13 +44,14 @@ The system is built to handle heavy analytical compute separately from the user 
 ```bash
 ./setup_env.bat
 docker compose up -d --build
+```
 
-2. Run the Pipeline
+### 2. Run the Pipeline
 Open Airflow at http://localhost:8080.
 Unpause the stock_explorer_manual DAG.
 Trigger with a config JSON: {"ticker": "AAPL"}.
 
-3. View Analytics
+### 3. View Analytics
 Open Streamlit at http://localhost:8501.
 Select your ticker and hit "Refresh Data".
 
