@@ -40,9 +40,15 @@ The system is built to handle heavy analytical compute separately from the user 
 
 ## 🚀 Getting Started
 
-### 1. Build the Environment
+### 1. Build  and Launch
 ```bash
+
+**Windows (Command Prompt/PowerShell):**
 ./setup_env.bat
+
+**Linux/MAC (Terminal):**
+./setup_env.sh
+
 docker compose up -d --build
 ```
 
