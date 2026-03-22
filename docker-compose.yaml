@@ -34,23 +34,20 @@ services:
       retries: 5
     restart: always
 
-  # --- AIRFLOW SERVICES ---
   airflow-webserver:
     image: apache/airflow:2.8.0-python3.11
     command: webserver
     ports:
       - "8080:8080"
     env_file:
-      - .env  # This loads the HOST_PROJECT_PATH from your .env file
+      - .env 
     environment:
-      # Common Settings
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
       AIRFLOW__CORE__FERNET_KEY: ''
       AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
       AIRFLOW_UID: 50000
-      # Your Custom Host Path
-      HOST_PROJECT_PATH: C:/Users/Anuj/Desktop/tutorials/real-time-stock-analytics
+      HOST_PROJECT_PATH: ${HOST_PROJECT_PATH}
     volumes:
       - ./dags:/opt/airflow/dags
       - ./logs:/opt/airflow/logs
@@ -73,7 +70,7 @@ services:
       AIRFLOW__CORE__FERNET_KEY: ''
       AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
       AIRFLOW_UID: 50000
-      HOST_PROJECT_PATH: C:/Users/Anuj/Desktop/tutorials/real-time-stock-analytics
+      HOST_PROJECT_PATH: ${HOST_PROJECT_PATH}
     volumes:
       - ./dags:/opt/airflow/dags
       - ./logs:/opt/airflow/logs
@@ -107,7 +104,7 @@ services:
     ports:
       - "8501:8501"
     volumes:
-      - ./data:/app/data  # This is the "Gold" layer connection
+      - ./data:/app/data 
     restart: always
 
 volumes:

@@ -1,3 +1,7 @@
+# Disclaimer: This tool is for educational and portfolio purposes only. It does not constitute financial advice. Always perform your own due diligence before trading. (See the "Caffeine Clause" in my LICENSE for details!)
+
+---
+
 # 🚀 End-to-End Stock Analytics Pipeline
 [![Apache Spark](https://img.shields.io/badge/Data_Processing-Apache_Spark-orange?style=flat&logo=apachespark)](https://spark.apache.org/)
 [![Apache Airflow](https://img.shields.io/badge/Orchestration-Apache_Airflow-017CEE?style=flat&logo=apacheairflow)](https://airflow.apache.org/)
@@ -38,6 +42,7 @@ The system is built to handle heavy analytical compute separately from the user 
 
 ### 1. Build the Environment
 ```bash
+./setup_env.bat
 docker compose up -d --build
 
 2. Run the Pipeline
